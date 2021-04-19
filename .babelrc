@@ -2,6 +2,7 @@
   "presets": ["next/babel"],
   "plugins": [
     "inline-react-svg",
-    ["module-resolver", { "alias": { "~": "./src" } }]
+    ["module-resolver", { "alias": { "~": "./src" } }],
+    ["styled-components", { "ssr": true }]
   ]
 }
