@@ -40,7 +40,9 @@ class Document extends NextDocument {
   render(): JSX.Element {
     return (
       <Html lang="pt-BR">
-        <Head />
+        <Head>
+          <link rel="shortcut icon" href="/favicon.png" type="image/x-icon" />
+        </Head>
 
         <body>
           <Main />
