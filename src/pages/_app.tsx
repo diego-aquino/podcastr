@@ -3,8 +3,8 @@ import { FC } from 'react';
 import { ThemeProvider } from 'styled-components';
 
 import { Header, Player } from '~/components';
-import { Container } from '~/styles/app';
 import GlobalStyle from '~/styles/global';
+import { Container } from '~/styles/pages/app';
 import theme from '~/styles/theme';
 
 const App: FC<AppProps> = ({ Component, pageProps }) => (

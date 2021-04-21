@@ -4,6 +4,9 @@ const nextConfig = {
   future: {
     webpack5: true,
   },
+  images: {
+    domains: ['storage.googleapis.com'],
+  },
 };
 
 const nextImagesConfig = {
