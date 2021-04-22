@@ -61,10 +61,19 @@ const EpisodePage: FC<PageProps> = ({ episode }) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => ({
-  paths: [],
-  fallback: 'blocking',
-});
+export const getStaticPaths: GetStaticPaths = async () => {
+  const { data: episodes } = await api.get<EpisodeResponseItem[]>('/episodes', {
+    params: { _limit: 2, _sort: 'publishedAt', _order: 'desc' },
+  });
+
+  const paths = episodes.map((episode) => ({
+    params: {
+      id: episode.id,
+    },
+  }));
+
+  return { paths, fallback: 'blocking' };
+};
 
 export const getStaticProps: GetStaticProps<PageProps> = async (context) => {
   const { id } = context.params || {};

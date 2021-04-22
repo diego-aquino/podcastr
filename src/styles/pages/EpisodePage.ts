@@ -50,6 +50,10 @@ export const Container = styled.div`
 export const CoverContainer = styled.div`
   position: relative;
 
+  > div:first-of-type {
+    width: 100%;
+  }
+
   img {
     border-radius: 1rem;
   }
