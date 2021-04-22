@@ -1,6 +1,6 @@
-import styled, { css, FlattenSimpleInterpolation } from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const Container = styled.header`
+export const Container = styled.aside`
   width: 26.5rem;
   height: 100vh;
   padding: 3rem 4rem;
@@ -15,11 +15,13 @@ export const Container = styled.header`
   background-color: ${({ theme }) => theme.colors.purple[500]};
 
   header {
-    display: grid;
+    display: flex;
     align-items: center;
-    grid-template-rows: 1fr;
-    grid-template-columns: repeat(2, max-content);
-    gap: 1rem;
+
+    svg {
+      margin-right: 1rem;
+      min-width: 2rem;
+    }
   }
 
   span {
@@ -28,42 +30,62 @@ export const Container = styled.header`
   }
 `;
 
-type FeaturedPodcastMode = 'inactive' | 'active';
-
-const featuredPodcastStyles: {
-  [key in FeaturedPodcastMode]: FlattenSimpleInterpolation;
-} = {
-  inactive: css``,
-  active: css``,
-};
-
 interface FeaturedPodcastProps {
-  mode: FeaturedPodcastMode;
+  mode: 'active' | 'inactive';
 }
 
 export const FeaturedPodcast = styled.div<FeaturedPodcastProps>`
-  ${({ mode }) => featuredPodcastStyles[mode]}
-
   width: 100%;
   height: 20rem;
-  border: 1.5px dashed ${({ theme }) => theme.colors.purple[300]};
   border-radius: 1.5rem;
-  padding: 4rem;
   text-align: center;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  background-image: linear-gradient(
-    143.8deg,
-    rgba(145, 100, 250, 0.8) 0%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  ${({ mode }) =>
+    mode === 'active' &&
+    css`
+      text-align: center;
+
+      img {
+        border-radius: 1.5rem;
+      }
+
+      h3 {
+        margin-top: 2rem;
+
+        font: 600 1.25rem 'Lexend', sans-serif;
+        line-height: 1.75rem;
+
+        color: ${({ theme }) => theme.colors.white};
+      }
+
+      span {
+        margin-top: 1rem;
+        display: block;
+        line-height: 1.5rem;
+        opacity: 0.6;
+      }
+    `}
+
+  ${({ mode }) =>
+    mode === 'inactive' &&
+    css`
+      padding: 4rem;
+      border: 1.5px dashed ${({ theme }) => theme.colors.purple[300]};
+
+      background-image: linear-gradient(
+        143.8deg,
+        rgba(145, 100, 250, 0.8) 0%,
+        rgba(0, 0, 0, 0) 100%
+      );
+    `}
 `;
 
 interface FooterProps {
-  mode: 'inactive' | 'active';
+  mode: 'active' | 'inactive';
 }
 
 export const Footer = styled.footer<FooterProps>`
@@ -88,32 +110,53 @@ export const Progress = styled.div`
   }
 `;
 
-export const Slider = styled.div`
+interface SliderProps {
+  mode: 'active' | 'inactive';
+}
+
+export const SliderContainer = styled.div<SliderProps>`
   flex: 1;
-  height: 0.25rem;
-  background-color: ${({ theme }) => theme.colors.purple[300]};
-  border-radius: 0.125rem;
+
+  ${({ mode }) =>
+    mode === 'inactive' &&
+    css`
+      height: 0.25rem;
+      background-color: ${({ theme }) => theme.colors.purple[300]};
+      border-radius: 0.125rem;
+    `}
 `;
 
 export const ActionButtons = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1.5rem;
+  margin-top: 0.75rem;
 
   > * + * {
-    margin-left: 1.5rem;
+    margin-left: 0.75rem;
   }
 
   button {
-    background: transparent;
+    padding: 0.75rem;
     border: 0;
+    border-radius: 0.75rem;
     font-size: 0;
+    background-color: transparent;
+    transition: background-color 0.15s;
+
+    :hover:not(:disabled) {
+      background-color: ${({ theme }) => theme.colors.purple[400]};
+    }
+
+    :disabled {
+      cursor: default;
+    }
   }
 `;
 
 export const PlayButton = styled.button`
   width: 4rem;
+  min-width: 4rem;
   height: 4rem;
   border-radius: 1rem;
 

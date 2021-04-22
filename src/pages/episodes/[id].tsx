@@ -6,6 +6,7 @@ import React, { FC, useCallback } from 'react';
 
 import api from '~/api';
 import { ArrowLeftIcon, PlayIcon } from '~/assets';
+import { usePlayer } from '~/contexts/PlayerContext';
 import {
   Container,
   CoverContainer,
@@ -19,6 +20,7 @@ interface PageProps {
 }
 
 const EpisodePage: FC<PageProps> = ({ episode }) => {
+  const { startPlaying } = usePlayer();
   const router = useRouter();
 
   const returnToHomePage = useCallback(() => router.push('/'), [router]);
@@ -41,7 +43,7 @@ const EpisodePage: FC<PageProps> = ({ episode }) => {
               objectFit="cover"
             />
           )}
-          <button type="button">
+          <button type="button" onClick={() => startPlaying(episode)}>
             <PlayIcon aria-label="Tocar episódio" />
           </button>
         </CoverContainer>

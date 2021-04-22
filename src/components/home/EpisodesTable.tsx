@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { FC } from 'react';
 
 import { PlayGreenIcon } from '~/assets';
+import { usePlayer } from '~/contexts/PlayerContext';
 import { Container } from '~/styles/components/home/EpisodesTable';
 import { Episode } from '~/typings';
 
@@ -11,6 +12,8 @@ interface Props {
 }
 
 const EpisodesTable: FC<Props> = ({ episodes }) => {
+  const { startPlaying } = usePlayer();
+
   const renderEpisodeTableRow = (episode: Episode) => (
     <tr key={episode.id}>
       <td>
@@ -30,7 +33,7 @@ const EpisodesTable: FC<Props> = ({ episodes }) => {
       <td>{episode.publishedAt}</td>
       <td>{episode.durationAsString}</td>
       <td>
-        <button type="button">
+        <button type="button" onClick={() => startPlaying(episode)}>
           <PlayGreenIcon aria-label="Tocar episódio" />
         </button>
       </td>
