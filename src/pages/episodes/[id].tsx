@@ -28,33 +28,35 @@ const EpisodePage: FC<PageProps> = ({ episode }) => {
       <Head>
         <title>{`Podcastr | ${episode.title}`}</title>
       </Head>
-      <CoverContainer>
-        <button type="button" onClick={returnToHomePage}>
-          <ArrowLeftIcon aria-label="Voltar" />
-        </button>
-        {episode && (
-          <Image
-            src={episode.thumbnail}
-            width={700}
-            height={160}
-            objectFit="cover"
-          />
-        )}
-        <button type="button">
-          <PlayIcon aria-label="Tocar episódio" />
-        </button>
-      </CoverContainer>
+      <div>
+        <CoverContainer>
+          <button type="button" onClick={returnToHomePage}>
+            <ArrowLeftIcon aria-label="Voltar" />
+          </button>
+          {episode && (
+            <Image
+              src={episode.thumbnail}
+              width={700}
+              height={160}
+              objectFit="cover"
+            />
+          )}
+          <button type="button">
+            <PlayIcon aria-label="Tocar episódio" />
+          </button>
+        </CoverContainer>
 
-      <header>
-        <h1>{episode.title}</h1>
-        <span>{episode.members}</span>
-        <span>{episode.publishedAt}</span>
-        <span>{episode.durationAsString}</span>
-      </header>
+        <header>
+          <h1>{episode.title}</h1>
+          <span>{episode.members}</span>
+          <span>{episode.publishedAt}</span>
+          <span>{episode.durationAsString}</span>
+        </header>
 
-      <Description
-        dangerouslySetInnerHTML={{ __html: episode?.description ?? '' }}
-      />
+        <Description
+          dangerouslySetInnerHTML={{ __html: episode?.description ?? '' }}
+        />
+      </div>
     </Container>
   );
 };

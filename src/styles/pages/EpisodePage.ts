@@ -1,9 +1,15 @@
 import styled from 'styled-components';
 
 export const Container = styled.div`
-  max-width: 45rem;
+  height: calc(100vh - 6.5rem);
   padding: 3rem 2rem;
-  margin: 0 auto;
+
+  overflow-y: auto;
+
+  > div {
+    max-width: 45rem;
+    margin: 0 auto;
+  }
 
   header {
     padding-bottom: 1rem;
