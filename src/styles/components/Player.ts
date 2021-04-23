@@ -3,6 +3,7 @@ import styled, { css } from 'styled-components';
 export const Container = styled.aside`
   width: 26.5rem;
   height: 100vh;
+  overflow-y: auto;
   padding: 3rem 4rem;
 
   display: flex;
@@ -36,7 +37,6 @@ interface FeaturedPodcastProps {
 
 export const FeaturedPodcast = styled.div<FeaturedPodcastProps>`
   width: 100%;
-  height: 20rem;
   border-radius: 1.5rem;
   text-align: center;
 
@@ -47,6 +47,7 @@ export const FeaturedPodcast = styled.div<FeaturedPodcastProps>`
   ${({ mode }) =>
     mode === 'active' &&
     css`
+      padding: 2rem 0;
       text-align: center;
 
       img {
@@ -73,6 +74,7 @@ export const FeaturedPodcast = styled.div<FeaturedPodcastProps>`
   ${({ mode }) =>
     mode === 'inactive' &&
     css`
+      height: 20rem;
       padding: 4rem;
       border: 1.5px dashed ${({ theme }) => theme.colors.purple[300]};
 
@@ -84,20 +86,21 @@ export const FeaturedPodcast = styled.div<FeaturedPodcastProps>`
     `}
 `;
 
-interface FooterProps {
-  mode: 'active' | 'inactive';
-}
-
-export const Footer = styled.footer<FooterProps>`
-  align-self: stretch; // width: 100%;
-  opacity: ${({ mode }) => (mode === 'inactive' ? 0.5 : 1)};
+export const Footer = styled.footer`
+  align-self: stretch;
 `;
 
-export const Progress = styled.div`
+interface ProgressProps {
+  inactive?: boolean;
+}
+
+export const Progress = styled.div<ProgressProps>`
   display: flex;
   align-items: center;
 
   font-size: 0.875rem;
+
+  opacity: ${({ inactive }) => (inactive ? 0.5 : 1)};
 
   > * + * {
     margin-left: 0.5rem;
@@ -111,14 +114,14 @@ export const Progress = styled.div`
 `;
 
 interface SliderProps {
-  mode: 'active' | 'inactive';
+  inactive?: boolean;
 }
 
 export const SliderContainer = styled.div<SliderProps>`
   flex: 1;
 
-  ${({ mode }) =>
-    mode === 'inactive' &&
+  ${({ inactive }) =>
+    inactive &&
     css`
       height: 0.25rem;
       background-color: ${({ theme }) => theme.colors.purple[300]};
@@ -135,26 +138,43 @@ export const ActionButtons = styled.div`
   > * + * {
     margin-left: 0.75rem;
   }
+`;
 
-  button {
-    padding: 0.75rem;
-    border: 0;
-    border-radius: 0.75rem;
-    font-size: 0;
-    background-color: transparent;
-    transition: background-color 0.15s;
+interface ActionButtonProps {
+  highlighted?: boolean;
+}
 
-    :hover:not(:disabled) {
-      background-color: ${({ theme }) => theme.colors.purple[400]};
-    }
+export const ActionButton = styled.button<ActionButtonProps>`
+  padding: 0.75rem;
+  border: 0;
+  border-radius: 0.75rem;
+  font-size: 0;
+  background-color: transparent;
+  transition: background-color 0.15s;
 
-    :disabled {
-      cursor: default;
-    }
+  :hover:not(:disabled) {
+    background-color: ${({ theme }) => theme.colors.purple[400]};
+  }
+
+  :disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  ${({ highlighted }) =>
+    highlighted &&
+    css`
+      svg {
+        filter: invert(0.35) sepia(1) saturate(3) hue-rotate(100deg);
+      }
+    `}
+
+  svg {
+    transition: filter 0.15s;
   }
 `;
 
-export const PlayButton = styled.button`
+export const PlayActionButton = styled(ActionButton)`
   width: 4rem;
   min-width: 4rem;
   height: 4rem;

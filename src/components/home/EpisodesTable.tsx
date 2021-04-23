@@ -33,7 +33,7 @@ const EpisodesTable: FC<Props> = ({ episodes }) => {
       <td>{episode.publishedAt}</td>
       <td>{episode.durationAsString}</td>
       <td>
-        <button type="button" onClick={() => startPlaying(episode)}>
+        <button type="button" onClick={() => startPlaying(episode.index)}>
           <PlayGreenIcon aria-label="Tocar episódio" />
         </button>
       </td>

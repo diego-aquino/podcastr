@@ -7,7 +7,7 @@ import { convertDurationToTimeString } from '~/utils/date';
 
 export function convertEpisodeResponseItemToEpisode(
   episodeItem: EpisodeResponseItem,
-): Episode {
+): Omit<Episode, 'index'> {
   const formattedPublishDate = format(
     parseISO(episodeItem.publishedAt),
     'd MMM yy',
@@ -27,6 +27,8 @@ export function convertEpisodeResponseItemToEpisode(
     description: episodeItem.description,
     url: episodeItem.file.url,
     durationInSeconds: episodeItem.file.duration,
-    durationAsString: convertDurationToTimeString(episodeItem.file.duration),
+    durationAsString: convertDurationToTimeString(
+      Math.floor(episodeItem.file.duration),
+    ),
   };
 }

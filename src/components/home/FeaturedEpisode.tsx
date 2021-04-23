@@ -39,7 +39,7 @@ const LatestEpisode: FC<Props> = ({ episode }) => {
         </div>
       </EpisodeDetails>
 
-      <button type="button" onClick={() => startPlaying(episode)}>
+      <button type="button" onClick={() => startPlaying(episode.index)}>
         <PlayGreenIcon aria-label="Tocar episódio" />
       </button>
     </Container>

@@ -1,6 +1,13 @@
 import Image from 'next/image';
 import Slider from 'rc-slider';
-import React, { FC, useEffect, useRef } from 'react';
+import React, {
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import 'rc-slider/assets/index.css';
 
 import {
@@ -12,35 +19,73 @@ import {
   ShuffleIcon,
   PauseIcon,
 } from '~/assets';
-import { usePlayer } from '~/contexts/PlayerContext';
+import { PlayerContextProvider, usePlayer } from '~/contexts/PlayerContext';
 import {
   ActionButtons,
+  ActionButton,
   Container,
   FeaturedPodcast,
   Footer,
-  PlayButton,
+  PlayActionButton,
   Progress,
   SliderContainer,
 } from '~/styles/components/Player';
+import { convertDurationToTimeString } from '~/utils/date';
 
 const Player: FC = () => {
-  const { currentEpisode, pause, resume } = usePlayer();
-  const { isPlaying } = currentEpisode || {};
+  const player = usePlayer();
+  const { currentEpisode } = player;
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  const [progressInSeconds, setProgressInSeconds] = useState(0);
+
+  const progressAsString = useMemo(
+    () =>
+      currentEpisode ? convertDurationToTimeString(progressInSeconds) : '00:00',
+    [currentEpisode, progressInSeconds],
+  );
+
   useEffect(() => {
-    if (isPlaying) {
+    if (player.isPlaying) {
       audioRef.current?.play();
     } else {
       audioRef.current?.pause();
     }
-  }, [isPlaying]);
+  }, [player.isPlaying]);
+
+  const onAudioLoad = useCallback(() => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = 0;
+  }, []);
+
+  const onAudioTimeUpdate = useCallback(() => {
+    if (!audioRef.current) return;
+
+    const newProgress = Math.floor(audioRef.current.currentTime);
+    setProgressInSeconds(newProgress);
+  }, []);
+
+  const onSliderChange = useCallback((value: number) => {
+    if (!audioRef.current) return;
+
+    const newProgress = Math.floor(value);
+    audioRef.current.currentTime = newProgress;
+    setProgressInSeconds(newProgress);
+  }, []);
+
+  const onAudioEnd = useCallback(() => {
+    if (player.hasNext) {
+      player.playNext();
+    } else {
+      player.clear();
+    }
+  }, [player]);
 
   return (
     <Container>
       <header>
         <PlayingIcon aria-label="Tocando agora" />
-        <span>{isPlaying ? `Tocando agora...` : 'Pausado'}</span>
+        <span>{player.isPlaying ? `Tocando agora...` : 'Pausado'}</span>
       </header>
 
       <FeaturedPodcast mode={currentEpisode ? 'active' : 'inactive'}>
@@ -67,49 +112,82 @@ const Player: FC = () => {
           ref={audioRef}
           src={currentEpisode.url}
           autoPlay
-          onPlay={resume}
-          onPause={pause}
+          onPlay={player.resume}
+          onPause={player.pause}
+          onEnded={onAudioEnd}
+          onLoadedMetadata={onAudioLoad}
+          onTimeUpdate={onAudioTimeUpdate}
         />
       )}
 
-      <Footer mode={currentEpisode ? 'active' : 'inactive'}>
-        <Progress>
-          <span>00:00</span>
-          <SliderContainer mode={currentEpisode ? 'active' : 'inactive'}>
+      <Footer>
+        <Progress inactive={!currentEpisode}>
+          <span>{progressAsString}</span>
+          <SliderContainer inactive={!currentEpisode}>
             {currentEpisode && (
               <Slider
+                value={progressInSeconds}
+                min={0}
+                max={currentEpisode.durationInSeconds}
+                onChange={onSliderChange}
                 trackStyle={{ backgroundColor: '#04d361' }}
                 railStyle={{ backgroundColor: '#9f75ff' }}
                 handleStyle={{ borderColor: '#04d361', borderWidth: 4 }}
               />
             )}
           </SliderContainer>
-          <span>00:00</span>
+          <span>{currentEpisode?.durationAsString ?? '00:00'}</span>
         </Progress>
         <ActionButtons>
-          <button type="button" disabled={!currentEpisode}>
-            <ShuffleIcon aria-label="Embaralhar" />
-          </button>
-          <button type="button" disabled={!currentEpisode}>
-            <PlayPreviousIcon aria-label="Tocar anterior" />
-          </button>
-          <PlayButton
+          <ActionButton
             type="button"
-            onClick={() => (isPlaying ? pause() : resume())}
+            highlighted={player.isShuffleActive}
+            onClick={player.toggleShuffle}
+            disabled={!currentEpisode || player.episodes.length === 1}
+          >
+            <ShuffleIcon aria-label="Embaralhar" />
+          </ActionButton>
+          <ActionButton
+            type="button"
+            onClick={player.playPrevious}
+            disabled={
+              !currentEpisode ||
+              (!player.hasPrevious && !player.isLoopActive) ||
+              player.episodes.length === 1
+            }
+          >
+            <PlayPreviousIcon aria-label="Tocar anterior" />
+          </ActionButton>
+          <PlayActionButton
+            type="button"
+            onClick={player.isPlaying ? player.pause : player.resume}
             disabled={!currentEpisode}
           >
-            {isPlaying ? (
+            {player.isPlaying ? (
               <PauseIcon aria-label="Pausar" />
             ) : (
               <PlayIcon aria-label="Tocar" />
             )}
-          </PlayButton>
-          <button type="button" disabled={!currentEpisode}>
+          </PlayActionButton>
+          <ActionButton
+            type="button"
+            onClick={player.playNext}
+            disabled={
+              !currentEpisode ||
+              (!player.hasNext && !player.isLoopActive) ||
+              player.episodes.length === 1
+            }
+          >
             <PlayNextIcon aria-label="Tocar próximo" />
-          </button>
-          <button type="button" disabled={!currentEpisode}>
+          </ActionButton>
+          <ActionButton
+            type="button"
+            highlighted={player.isLoopActive}
+            onClick={player.toggleLoop}
+            disabled={!currentEpisode}
+          >
             <RepeatIcon aria-label="Repetir" />
-          </button>
+          </ActionButton>
         </ActionButtons>
       </Footer>
     </Container>

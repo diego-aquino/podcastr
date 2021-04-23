@@ -3,25 +3,31 @@ import {
   FC,
   useCallback,
   useContext,
-  useEffect,
+  useMemo,
   useState,
 } from 'react';
 
 import { Episode } from '~/typings';
 
-type CurrentEpisode =
-  | (Episode & {
-      index: number;
-      isPlaying: boolean;
-    })
-  | null;
-
 interface PlayerContextValue {
   episodes: Episode[];
-  currentEpisode: CurrentEpisode;
-  startPlaying: (episode: Episode) => void;
-  pause: () => void;
+  currentEpisode: Episode | null;
+  currentEpisodeIndex: number;
+  isPlaying: boolean;
+  hasPrevious: boolean;
+  hasNext: boolean;
+  isLoopActive: boolean;
+  isShuffleActive: boolean;
+  loadEpisodes: (episodes: Episode[]) => void;
+  startPlaying: (episodeIndex: number) => void;
+  startPlayingOne: (episode: Episode) => void;
   resume: () => void;
+  pause: () => void;
+  playPrevious: () => void;
+  playNext: () => void;
+  toggleLoop: () => void;
+  toggleShuffle: () => void;
+  clear: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextValue>(
@@ -29,61 +35,125 @@ const PlayerContext = createContext<PlayerContextValue>(
 );
 
 export const PlayerContextProvider: FC = ({ children }) => {
-  const [queuedEpisodes, setQueuedEpisodes] = useState<Episode[]>([]);
-  const [currentEpisode, setCurrentEpisode] = useState<CurrentEpisode>(null);
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(-1);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoopActive, setIsLoopActive] = useState(false);
+  const [isShuffleActive, setIsShuffleActive] = useState(false);
 
-  const changePlayingState = useCallback((newPlayingState: boolean) => {
-    setCurrentEpisode((episode) => {
-      if (!episode) return null;
-      return { ...episode, isPlaying: newPlayingState };
-    });
+  const currentEpisode =
+    currentEpisodeIndex >= 0 ? episodes[currentEpisodeIndex] : null;
+
+  const hasPrevious = useMemo(() => {
+    if (episodes.length === 0) return false;
+    if (isShuffleActive || isLoopActive) return true;
+    return currentEpisodeIndex > 0;
+  }, [currentEpisodeIndex, episodes.length, isLoopActive, isShuffleActive]);
+
+  const hasNext = useMemo(() => {
+    if (episodes.length === 0) return false;
+    if (isShuffleActive || isLoopActive) return true;
+    return currentEpisodeIndex < episodes.length - 1;
+  }, [currentEpisodeIndex, episodes.length, isLoopActive, isShuffleActive]);
+
+  const loadEpisodes = useCallback((episodesToLoad: Episode[]) => {
+    setEpisodes(episodesToLoad);
   }, []);
 
-  const queue = useCallback((episode: Episode) => {
-    setQueuedEpisodes((currentQueuedEpisodes) => [
-      ...currentQueuedEpisodes,
-      episode,
-    ]);
+  const changePlayingState = useCallback((newPlayingState?: boolean) => {
+    setIsPlaying((currentPlayingState) =>
+      newPlayingState === undefined ? !currentPlayingState : newPlayingState,
+    );
   }, []);
 
-  const startPlaying = useCallback(
-    (episode: Episode) => {
-      setCurrentEpisode((currentCurrentEpisode) => {
-        const episodeIsAlreadyCurrent =
-          episode.id === currentCurrentEpisode?.id;
+  const startPlaying = useCallback((episodeIndex: number) => {
+    setCurrentEpisodeIndex(episodeIndex);
+  }, []);
 
-        if (episodeIsAlreadyCurrent) {
-          return currentCurrentEpisode;
-        }
-
-        const newEpisodeIndex = queuedEpisodes.length;
-        queue(episode);
-        return { ...episode, index: newEpisodeIndex, isPlaying: true };
-      });
-    },
-    [queuedEpisodes, queue],
-  );
-
-  const pause = useCallback(() => {
-    changePlayingState(false);
-  }, [changePlayingState]);
+  const startPlayingOne = useCallback((episode: Episode) => {
+    setEpisodes([episode]);
+    setCurrentEpisodeIndex(0);
+  }, []);
 
   const resume = useCallback(() => {
     changePlayingState(true);
   }, [changePlayingState]);
 
-  useEffect(() => {
-    console.log(queuedEpisodes);
-  }, [queuedEpisodes]);
+  const pause = useCallback(() => {
+    changePlayingState(false);
+  }, [changePlayingState]);
+
+  const playPrevious = useCallback(() => {
+    setCurrentEpisodeIndex((episodeIndex) => {
+      if (isShuffleActive) {
+        const randomEpisodeIndex = Math.floor(Math.random() * episodes.length);
+        return randomEpisodeIndex;
+      }
+
+      const isFirst = currentEpisodeIndex === 0;
+      if (isFirst) {
+        if (isLoopActive) return episodes.length - 1;
+        return episodeIndex;
+      }
+
+      return episodeIndex - 1;
+    });
+  }, [isShuffleActive, currentEpisodeIndex, episodes.length, isLoopActive]);
+
+  const playNext = useCallback(() => {
+    setCurrentEpisodeIndex((episodeIndex) => {
+      console.log(isShuffleActive, isLoopActive);
+
+      if (isShuffleActive) {
+        const randomEpisodeIndex = Math.floor(Math.random() * episodes.length);
+        return randomEpisodeIndex;
+      }
+
+      const isLast = currentEpisodeIndex === episodes.length - 1;
+      if (isLast) {
+        if (isLoopActive) return 0;
+        return episodeIndex;
+      }
+
+      return episodeIndex + 1;
+    });
+  }, [isShuffleActive, isLoopActive, currentEpisodeIndex, episodes.length]);
+
+  const toggleLoop = useCallback(
+    () => setIsLoopActive((currentLoopState) => !currentLoopState),
+    [],
+  );
+
+  const toggleShuffle = useCallback(
+    () => setIsShuffleActive((currentShuffleState) => !currentShuffleState),
+    [],
+  );
+
+  const clear = useCallback(() => {
+    setCurrentEpisodeIndex(-1);
+  }, []);
 
   return (
     <PlayerContext.Provider
       value={{
-        episodes: queuedEpisodes,
+        episodes,
         currentEpisode,
+        currentEpisodeIndex,
+        isPlaying,
+        hasPrevious,
+        hasNext,
+        isLoopActive,
+        isShuffleActive,
         startPlaying,
+        startPlayingOne,
+        loadEpisodes,
         pause,
         resume,
+        playPrevious,
+        playNext,
+        toggleLoop,
+        toggleShuffle,
+        clear,
       }}
     >
       {children}

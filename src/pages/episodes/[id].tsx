@@ -20,7 +20,7 @@ interface PageProps {
 }
 
 const EpisodePage: FC<PageProps> = ({ episode }) => {
-  const { startPlaying } = usePlayer();
+  const { startPlayingOne } = usePlayer();
   const router = useRouter();
 
   const returnToHomePage = useCallback(() => router.push('/'), [router]);
@@ -43,7 +43,7 @@ const EpisodePage: FC<PageProps> = ({ episode }) => {
               objectFit="cover"
             />
           )}
-          <button type="button" onClick={() => startPlaying(episode)}>
+          <button type="button" onClick={() => startPlayingOne(episode)}>
             <PlayIcon aria-label="Tocar episódio" />
           </button>
         </CoverContainer>
